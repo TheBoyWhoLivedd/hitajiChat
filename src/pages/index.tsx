@@ -37,7 +37,10 @@ export default function Component() {
             <Button
               variant="outlined"
               sx={{ p: 2, width: isMobile ? "100%" : "60%" }}
-              onClick={() => signIn("google")}
+              onClick={(e) => {
+                e.preventDefault();
+                signIn("google", { callbackUrl: "/dashboard" });
+              }}
             >
               <Image
                 src="/google.svg"
@@ -61,9 +64,10 @@ export default function Component() {
   );
 }
 
-
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const session = await getSession(context);
+
+  // console.log("session", session);
 
   if (session) {
     return {

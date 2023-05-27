@@ -151,18 +151,6 @@ export default async function handler(
           message: docTitle,
           content: defaultMessage,
         });
-        // const response = await fetch("https://api.openai.com/v1/embeddings", {
-        //   headers: {
-        //     "Content-Type": "application/json",
-        //     Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-        //   },
-        //   method: "POST",
-        //   body: JSON.stringify({
-        //     model: "text-embedding-ada-002",
-        //     input: pdfContent,
-        //   }),
-        // });
-        // const responseData = await response.json();
         const embeddings = new OpenAIEmbeddings();
         const pinecone = await initPinecone();
         const index = pinecone.Index(PINECONE_INDEX_NAME);
