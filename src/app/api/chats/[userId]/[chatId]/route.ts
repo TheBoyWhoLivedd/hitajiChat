@@ -10,41 +10,35 @@ import type {
   CreateChatCompletionRequest,
   ChatCompletionRequestMessage,
 } from "openai";
-// import { v4 as uuidv4 } from "uuid";
 import {
   ParsedEvent,
   ReconnectInterval,
   createParser,
 } from "eventsource-parser";
-// import mongoose from "mongoose";
 import { getTokens } from "@/utils/util";
-// import { withMethods } from "@/utils/withMethods";
-// import { User } from "@/app/models/user";
-// import { Documents } from "@/app/models/document";
-// import { Chat } from "@/app/models/chat";
-// import { mongooseConnect } from "@/utils/mongooseConnect";
-// import dbConnect from "@/utils/dbConnect";
-// import { getServerSession } from "next-auth/next";
-// import authOptions from "../../../../../pages/api/auth/[...nextauth].js";
 import { parse } from "url";
 
 // export const runtime = "edge";
+// Global Pinecone instance
+let pinecone: PineconeClient;
 
-//Pinecone setup
+// Pinecone initialization
 async function initPinecone() {
-  try {
-    const pinecone = new PineconeClient();
+  if (!pinecone) {
+    try {
+      pinecone = new PineconeClient();
 
-    await pinecone.init({
-      environment: process.env.PINECONE_ENVIRONMENT ?? "", //this is in the dashboard
-      apiKey: process.env.PINECONE_API_KEY ?? "",
-    });
-
-    return pinecone;
-  } catch (error) {
-    console.log("error", error);
-    throw new Error("Failed to initialize Pinecone Client");
+      await pinecone.init({
+        environment: process.env.PINECONE_ENVIRONMENT ?? "", //this is in the dashboard
+        apiKey: process.env.PINECONE_API_KEY ?? "",
+      });
+    } catch (error) {
+      console.log("error", error);
+      throw new Error("Failed to initialize Pinecone Client");
+    }
   }
+
+  return pinecone;
 }
 
 if (!process.env.PINECONE_INDEX_NAME) {
