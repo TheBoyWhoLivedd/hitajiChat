@@ -1,14 +1,14 @@
 import multer from "multer";
 import { NextApiRequest, NextApiResponse } from "next";
-import { getDocument } from "pdfjs-dist/legacy/build/pdf";
+// import { getDocument } from "pdfjs-dist/legacy/build/pdf";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
-import { OpenAIEmbeddings } from "langchain/embeddings";
+// import { OpenAIEmbeddings } from "langchain/embeddings";
 import { PineconeStore } from "langchain/vectorstores";
 import { Document } from "langchain/document";
 import { Documents } from "@/app/models/document";
 import { PineconeClient } from "@pinecone-database/pinecone";
 import { v4 as uuidv4 } from "uuid";
-import { mongooseConnect } from "@/utils/mongooseConnect";
+// import { mongooseConnect } from "@/utils/mongooseConnect";
 import { getServerSession } from "next-auth/next";
 import authOptions from "../../../auth/[...nextauth]";
 import { Chat } from "@/app/models/chat";
@@ -80,6 +80,7 @@ const uploadMiddleware = (req: Request, res: Response, next: NextFunction) => {
 
 // Function to read the contents of the PDF file
 const readPdfContent = async (pdfBuffer: Buffer) => {
+  const { getDocument } = await import("pdfjs-dist/legacy/build/pdf");
   const uint8Array = new Uint8Array(pdfBuffer);
   const pdf = await getDocument({ data: uint8Array }).promise;
   let content = "";
@@ -107,6 +108,7 @@ export default async function handler(
   const session = await getServerSession(req, res, authOptions);
   if (session) {
     if (req.method === "POST") {
+      const { mongooseConnect } = await import("@/utils/mongooseConnect");
       await mongooseConnect();
       try {
         // Process the uploaded file
@@ -157,7 +159,10 @@ export default async function handler(
           message: docTitle,
           content: defaultMessage,
         });
-        const embeddings = new OpenAIEmbeddings();
+        // const embeddings = new OpenAIEmbeddings();
+        const embeddings = new (
+          await import("langchain/embeddings")
+        ).OpenAIEmbeddings();
         const pinecone = await initPinecone();
         const index = pinecone.Index(PINECONE_INDEX_NAME);
         // console.log(index); //change to your own index name
