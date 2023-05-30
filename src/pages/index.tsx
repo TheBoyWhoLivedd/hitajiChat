@@ -37,9 +37,9 @@ export default function Component() {
             <Button
               variant="outlined"
               sx={{ p: 2, width: isMobile ? "100%" : "60%" }}
-              onClick={(e) => {
-                e.preventDefault();
-                signIn("google", { callbackUrl: "/dashboard" });
+              onClick={() => {
+                // e.preventDefault();  //, { callbackUrl: "/dashboard" }
+                signIn("google");
               }}
             >
               <Image
