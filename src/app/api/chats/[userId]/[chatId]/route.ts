@@ -18,7 +18,7 @@ import {
 import { getTokens } from "@/utils/util";
 import { parse } from "url";
 
-// export const runtime = "edge";
+export const runtime = "edge";
 // Global Pinecone instance
 let pinecone: PineconeClient;
 
