@@ -41,10 +41,11 @@ async function initPinecone() {
   return pinecone;
 }
 
-if (!process.env.PINECONE_INDEX_NAME) {
-  throw new Error("Missing Pinecone index name in .env file");
-}
-const PINECONE_INDEX_NAME = process.env.PINECONE_INDEX_NAME ?? "hitaji-chat";
+// if (!process.env.PINECONE_INDEX_NAME) {
+//   throw new Error("Missing Pinecone index name in .env file");
+// }
+// const PINECONE_INDEX_NAME = process.env.PINECONE_INDEX_NAME ?? "hitaji-chat";
+const PINECONE_INDEX_NAME = "hitaji-chat";
 // const PINECONE_NAME_SPACE = process.env.PINECONE_NAME_SPACE ?? "trial-three"; //namespace is optional for your vectors
 
 // if (!process.env.PINECONE_INDEX_NAME) {
@@ -70,7 +71,8 @@ const fetchEmbeddings = async (message: string) => {
   const response = await fetch("https://api.openai.com/v1/embeddings", {
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      Authorization: `Bearer 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`,
+      // Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
     },
     method: "POST",
     body: JSON.stringify({
@@ -148,7 +150,8 @@ const requestGPT3Turbo = async (
     "https://api.openai.com/v1/chat/completions",
     {
       headers: {
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        // Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        Authorization: `Bearer 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`,
         "Content-Type": "application/json",
       },
       method: "POST",
