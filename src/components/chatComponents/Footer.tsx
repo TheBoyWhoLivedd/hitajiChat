@@ -130,9 +130,17 @@ const ChatInput = ({ chatId }: { chatId: string | string[] | undefined }) => {
         if (inputRef.current) {
           inputRef.current.value = "";
         }
+        const queryResponse = await axios.post(
+          `/api/query/${userId}/${chatId}`,
+          {
+            data,
+          }
+        );
+        const prompt = { gpt: queryResponse.data.gptMessages };
+        console.log("This is the Prompt", prompt);
         const res = await fetch(`/api/chats/${userId}/${chatId}`, {
           method: "POST",
-          body: JSON.stringify(data),
+          body: JSON.stringify(prompt),
           headers: {
             "Content-Type": "application/json",
           },
