@@ -1,8 +1,8 @@
 // if req.method === POST addMessage function
 // if req.method === DELETE deleteChat
 // if req.method === PATCH updateChatTitle
-import { config as dotenvConfig } from "dotenv";
-dotenvConfig();
+// import { config as dotenvConfig } from "dotenv";
+// dotenvConfig();
 import { PineconeClient } from "@pinecone-database/pinecone";
 // import { NextApiRequest, NextApiResponse } from "next";
 // import { ChatProps, IUser, VectorResult } from "../../../../../../types.js";
@@ -29,8 +29,8 @@ async function initPinecone() {
       pinecone = new PineconeClient();
 
       await pinecone.init({
-        environment: process.env.PINECONE_ENVIRONMENT ?? "", //this is in the dashboard
-        apiKey: process.env.PINECONE_API_KEY ?? "",
+        environment: "us-west4-gcp", //process.env.PINECONE_ENVIRONMENT ?? "", //this is in the dashboard
+        apiKey: "1b09c642-b042-44d8-ab8e-d48a4602b2e9", //process.env.PINECONE_API_KEY ?? "",
       });
     } catch (error) {
       console.log("error", error);
@@ -47,9 +47,9 @@ if (!process.env.PINECONE_INDEX_NAME) {
 const PINECONE_INDEX_NAME = process.env.PINECONE_INDEX_NAME ?? "hitaji-chat";
 // const PINECONE_NAME_SPACE = process.env.PINECONE_NAME_SPACE ?? "trial-three"; //namespace is optional for your vectors
 
-if (!process.env.PINECONE_INDEX_NAME) {
-  throw new Error("Missing Pinecone index name in .env file");
-}
+// if (!process.env.PINECONE_INDEX_NAME) {
+//   throw new Error("Missing Pinecone index name in .env file");
+// }
 
 // const fetchChatByChatId = async (chatId: string) => {
 //   const chat = await Chat.findById(chatId);
