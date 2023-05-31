@@ -7,10 +7,13 @@ import Image from "next/image";
 // import GoogleButton from "react-google-button";
 // import GoogleButton2 from "@/app/components/googleButton/GoogleButton";
 import useResponsive from "@/utils/hooks/useResponsive";
+import axios from "axios";
+import { start } from "repl";
 
 export default function Component() {
   const theme = useTheme();
   const isMobile = useResponsive("down", "sm");
+
   return (
     <>
       <Container sx={{ mt: 5 }} maxWidth="sm">
@@ -63,6 +66,13 @@ export default function Component() {
     </>
   );
 }
+
+//kickstarting server hosted on shared hosting so uploading a document doesnt take time
+async function startServer() {
+  let response = await axios.get(`https://www.upload.hitajitech.site`);
+  console.log(response);
+}
+startServer();
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const session = await getSession(context);

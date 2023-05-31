@@ -1,6 +1,4 @@
-import multer from "multer";
 import { NextApiRequest, NextApiResponse } from "next";
-import { getDocument } from "pdfjs-dist/legacy/build/pdf";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { OpenAIEmbeddings } from "langchain/embeddings";
 import { PineconeStore } from "langchain/vectorstores";
@@ -12,10 +10,8 @@ import { mongooseConnect } from "@/utils/mongooseConnect";
 import { getServerSession } from "next-auth/next";
 import authOptions from "../../../auth/[...nextauth]";
 import { Chat } from "@/app/models/chat";
-import { Request, Response, NextFunction } from "express";
-import { FileFilterCallback } from "multer";
-
-// configure pinecone
+import { Request} from "express";
+import getRawBody from "raw-body";
 
 if (!process.env.PINECONE_ENVIRONMENT || !process.env.PINECONE_API_KEY) {
   throw new Error("Pinecone environment or api key vars missing");
@@ -49,52 +45,6 @@ if (!process.env.PINECONE_INDEX_NAME) {
 
 const PINECONE_INDEX_NAME = process.env.PINECONE_INDEX_NAME ?? "test-index";
 
-// Configure multer memory storage
-const storage = multer.memoryStorage();
-const fileFilter = (
-  req: Request,
-  file: Express.Multer.File,
-  cb: FileFilterCallback
-) => {
-  if (file.mimetype === "application/pdf") {
-    cb(null, true);
-  } else {
-    cb(
-      new Error("Invalid file type. Only PDF files are allowed.") as any,
-      false
-    );
-  }
-};
-
-const upload = multer({ storage, fileFilter });
-
-// Middleware to handle multer file upload
-const uploadMiddleware = (req: Request, res: Response, next: NextFunction) => {
-  upload.single("pdf")(req, res, (err) => {
-    if (err) {
-      return res.status(401).json({ error: err.message });
-    }
-    next();
-  });
-};
-
-// Function to read the contents of the PDF file
-const readPdfContent = async (pdfBuffer: Buffer) => {
-  const uint8Array = new Uint8Array(pdfBuffer);
-  const pdf = await getDocument({ data: uint8Array }).promise;
-  let content = "";
-
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i);
-    const textContent = await page.getTextContent();
-    content += textContent.items
-      .map((item) => ("str" in item ? item.str : ""))
-      .join(" ");
-  }
-  content = content.replace(/\s+/g, " ");
-  return content;
-};
-
 interface NextApiRequestWithFile extends NextApiRequest {
   file: Express.Multer.File;
 }
@@ -109,17 +59,17 @@ export default async function handler(
     if (req.method === "POST") {
       await mongooseConnect();
       try {
-        // Process the uploaded file
-        await new Promise((resolve, reject) =>
-          uploadMiddleware(req as any, res as any, (result: unknown) => {
-            if (result instanceof Error) {
-              return reject(result);
-            }
-            resolve(result);
-          })
-        );
+        // Get the raw body of the request using getRawBody
+        const rawBody = await getRawBody(req, { limit: "10mb" });
+
+        // Convert the rawBody into JSON
+        const body = JSON.parse(rawBody.toString());
+
+        // Destructure pdfContent and originalFileName
+        const { pdfContent, originalFileName } = body;
+        // const { pdfContent, originalFileName } = req.body;
         const { userId, chatId, userName } = req.query;
-        const originalFileName = req.file?.originalname;
+        // const originalFileName = req.file?.originalname;
         const docTitle = originalFileName?.slice(0, -4);
         const content = `Hey ${userName}, I would be glad to answer any question about ${docTitle}, or if you would like me to give you a summary of what ${docTitle} is about, just click the Summarize button above`;
         const defaultMessage = {
@@ -130,7 +80,6 @@ export default async function handler(
         };
         const pineConeNameSpace = `${userId}-${chatId}`;
         // Read the contents of the PDF file
-        const pdfContent = req.file && (await readPdfContent(req.file.buffer));
         const newDocument = new Documents({
           _id: pineConeNameSpace,
           name: docTitle,

@@ -72,9 +72,16 @@ const Conversation = forwardRef<
           userName
         );
         // setFileUploading(true);
+        let res = await axios.post(`https://www.upload.hitajitech.site`, formData);
+        console.log(res);
+        const content = {
+          pdfContent: res.data.content,
+          originalFileName: res.data.originalFileName,
+        };
+        console.log(content);
         let response = await axios.post(
           `api/upload/${userId}/${chatId}/${userName}`,
-          formData
+          content
         );
         setFiles(null);
 
