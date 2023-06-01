@@ -71,7 +71,7 @@ const Conversation = forwardRef<
           "🚀 ~ file: Conversation.tsx:57 ~ handleSubmit ~ userName:",
           userName
         );
-        // setFileUploading(true);
+        setFileUploading(true);
         let res = await axios.post(`https://www.upload.hitajitech.site`, formData);
         // console.log(res);
         const content = {
@@ -97,7 +97,7 @@ const Conversation = forwardRef<
         const messageToRedux = response.data.content;
         dispatch(setIsTyping());
         dispatch(addMessage({ chatId, messageToRedux }));
-        // setFileUploading(false);
+        setFileUploading(false);
         response = await axios.patch(`/api/chats/${userId}/${chatId}`, data);
         dispatch(updateChatTitle({ chatId, title }));
         dispatch(

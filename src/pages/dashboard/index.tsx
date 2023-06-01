@@ -36,7 +36,13 @@ const GeneralApp = () => {
     let response = await axios.get(`https://www.upload.hitajitech.site`);
     // console.log(response);
   }
-  startServer();
+  useEffect(() => {
+    startServer();
+    // Set an interval to call it every 5 minutes
+    const intervalId = setInterval(startServer, 5 * 60 * 1000);
+    // Clear the interval when the component unmounts
+    return () => clearInterval(intervalId);
+  }, []);
 
   const fetchUserDataAndChats = useCallback(async () => {
     try {

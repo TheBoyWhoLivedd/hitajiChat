@@ -246,6 +246,9 @@ const TextMsg = forwardRef<HTMLPreElement, { message: Message; menu: Boolean }>(
                     ol({ node, ...props }) {
                       return <ol style={{ paddingLeft: "20px" }} {...props} />;
                     },
+                    ul({ node, ...props }) {
+                      return <ol style={{ paddingLeft: "20px" }} {...props} />;
+                    },
                     li({ node, ...props }) {
                       return (
                         <li {...props}>
