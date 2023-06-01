@@ -31,6 +31,13 @@ const GeneralApp = () => {
     useDispatch<ThunkDispatch<RootState, undefined, AnyAction>>();
   const { data: session } = useSession();
 
+  //kickstarting server hosted on shared hosting so uploading a document doesnt take time
+  async function startServer() {
+    let response = await axios.get(`https://www.upload.hitajitech.site`);
+    // console.log(response);
+  }
+  startServer();
+
   const fetchUserDataAndChats = useCallback(async () => {
     try {
       let response = await axios.post("/api/user", {

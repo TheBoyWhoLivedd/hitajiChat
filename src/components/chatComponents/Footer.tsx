@@ -162,7 +162,7 @@ const ChatInput = ({ chatId }: { chatId: string | string[] | undefined }) => {
           const chunkValue = decoder.decode(value);
           fullResponse += chunkValue;
           setResponse((prev) => prev + chunkValue);
-          console.log("Chunk Value", _response);
+          console.log("Response", fullResponse);
         }
 
         //send messageToredux and the _response to the backend for saving

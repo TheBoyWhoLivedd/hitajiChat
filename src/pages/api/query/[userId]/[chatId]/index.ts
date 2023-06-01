@@ -100,7 +100,7 @@ const constructPrompt = (
     tokenCount += tokens;
   });
 
-  const prompt = `You are a research assistant. Your name is Hitaji Research Assistant. When asked a question, your job is to sieve through the information,(Information: ${combinedText}) which has the highest cosine-similarity to the related question and use it to answer the question, question:${latestMessage}. If the question isn't related to the information, ask the person to rephrase the question.`;
+  const prompt = `You are a research assistant. Your name is Hitaji Research Assistant. When asked a question, your job is to sieve through the information,(Information: ${combinedText}) which has the highest cosine-similarity to the related question and use it to answer the question below. If the question isn't related to the information, ask for clarity. ALWAYS REPLY IN MARKDOWN. question:${latestMessage}.`;
   tokenCount += getTokens(prompt);
 
   while (tokenCount >= 4000 && reqMessages.length > 0) {
@@ -121,8 +121,10 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (session) {
     if (req.method === "POST") {
       try {
-        const { data: { messages } } = req.body
-       
+        const {
+          data: { messages },
+        } = req.body;
+
         const { userId, chatId } = req.query;
         const pineConeNameSpace = `${userId}-${chatId}`;
         const reqMessages = processMessages(messages);
