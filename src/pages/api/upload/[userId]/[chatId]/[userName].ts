@@ -10,7 +10,7 @@ import { mongooseConnect } from "@/utils/mongooseConnect";
 import { getServerSession } from "next-auth/next";
 import authOptions from "../../../auth/[...nextauth]";
 import { Chat } from "@/app/models/chat";
-import { Request} from "express";
+import { Request } from "express";
 import getRawBody from "raw-body";
 
 if (!process.env.PINECONE_ENVIRONMENT || !process.env.PINECONE_API_KEY) {
@@ -96,7 +96,7 @@ export default async function handler(
         const myDocument =
           pdfContent && new Document({ pageContent: pdfContent });
         const textSplitter = new RecursiveCharacterTextSplitter({
-          chunkSize: 1000,
+          chunkSize: 4000,
           chunkOverlap: 200,
         });
         const docs =

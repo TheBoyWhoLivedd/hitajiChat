@@ -81,7 +81,7 @@ const queryPinecone = async (
   const index = pinecone.Index(PINECONE_INDEX_NAME);
   const queryRequest = {
     vector: embedding,
-    topK: 4,
+    topK: 2,
     includeValues: true,
     includeMetadata: true,
     namespace: pineConeNameSpace,
@@ -102,10 +102,17 @@ const constructPrompt = (
 
   const prompt = `You are a research assistant. Your name is Hitaji Research Assistant. When asked a question, your job is to sieve through the information,(Information: ${combinedText}) which has the highest cosine-similarity to the related question and use it to answer the question below. If the question isn't related to the information, ask for clarity. ALWAYS REPLY IN MARKDOWN. question:${latestMessage}.`;
   tokenCount += getTokens(prompt);
+  console.log("Token Count", tokenCount);
 
   while (tokenCount >= 4000 && reqMessages.length > 0) {
     const firstMessage = reqMessages.shift();
-    tokenCount -= getTokens(firstMessage.content);
+    if (firstMessage) {
+      tokenCount -= getTokens(firstMessage.content);
+      console.log(
+        `Removed message with ${getTokens(firstMessage.content)} tokens`
+      );
+    }
+    // tokenCount -= getTokens(firstMessage.content);
   }
 
   if (tokenCount >= 4000) {
@@ -135,9 +142,11 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
         console.timeEnd("fetchEmbeddings");
         console.time("queryPinecone");
         const queryResponse = await queryPinecone(embedding, pineConeNameSpace);
-        console.timeEnd("queryPinecone");
 
+        console.timeEnd("queryPinecone");
+        // console.log(queryResponse);
         let combinedText = "";
+        const matchesText = {};
         //@ts-ignore
         for (const match of queryResponse?.matches) {
           //@ts-ignore
@@ -145,32 +154,38 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
             ?.trim()
             .replaceAll("\n", " ");
           combinedText += sanitizedText + "\n\n"; // concatenate with a space
+
+          //@ts-ignore
+          matchesText[match.id] = sanitizedText;
         }
+
+        console.log(matchesText);
+
         const prompt = constructPrompt(
           combinedText,
           latestMessage,
           reqMessages
         );
-        let tokenCount = 0;
+        // let tokenCount = 0;
 
-        reqMessages.forEach((msg) => {
-          const tokens = getTokens(msg.content);
-          tokenCount += tokens;
-        });
-        tokenCount += getTokens(prompt);
-        while (tokenCount >= 4000 && reqMessages.length > 0) {
-          const firstMessage = reqMessages.shift();
-          if (firstMessage) {
-            tokenCount -= getTokens(firstMessage.content);
-            console.log(
-              `Removed message with ${getTokens(firstMessage.content)} tokens`
-            );
-          }
-        }
+        // reqMessages.forEach((msg) => {
+        //   const tokens = getTokens(msg.content);
+        //   tokenCount += tokens;
+        // });
+        // tokenCount += getTokens(prompt);
+        // while (tokenCount >= 4000 && reqMessages.length > 0) {
+        //   const firstMessage = reqMessages.shift();
+        //   if (firstMessage) {
+        //     tokenCount -= getTokens(firstMessage.content);
+        //     console.log(
+        //       `Removed message with ${getTokens(firstMessage.content)} tokens`
+        //     );
+        //   }
+        // }
 
-        if (tokenCount >= 4000) {
-          throw new Error("Query too large");
-        }
+        // if (tokenCount >= 4000) {
+        //   throw new Error("Query too large");
+        // }
 
         const gptMessages: ChatCompletionRequestMessage[] = [
           { role: "system", content: prompt },
