@@ -70,7 +70,7 @@ export default function Component() {
 //kickstarting server hosted on shared hosting so uploading a document doesnt take time
 async function startServer() {
   let response = await axios.get(`https://www.upload.hitajitech.site`);
-  console.log(response);
+  // console.log(response);
 }
 startServer();
 

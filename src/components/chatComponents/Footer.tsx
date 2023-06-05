@@ -35,6 +35,7 @@ import { AnyAction } from "redux";
 import { ChatProps, Message } from "../../../types";
 import { responseAtom } from "@/utils/store";
 import { useAtom } from "jotai";
+import { CircularProgress } from "@mui/material";
 
 //the messages object from front end is different from the one on backend.
 //I need to define a separate type for the message object on front end but cant because i cant chat
@@ -83,6 +84,7 @@ const StyledInput = styled(TextField)(({ theme }) => ({
 }));
 const ChatInput = ({ chatId }: { chatId: string | string[] | undefined }) => {
   const [openActions, setOpenActions] = React.useState(false);
+  const [isSending, setIsSending] = useState(false);
   const [_response, setResponse] = useAtom(responseAtom);
   const dispatch =
     useDispatch<ThunkDispatch<RootState, undefined, AnyAction>>();
@@ -108,6 +110,7 @@ const ChatInput = ({ chatId }: { chatId: string | string[] | undefined }) => {
     chats: ChatProps[];
     chatId: string | string[] | undefined;
   }) => {
+    setIsSending(true);
     const textFieldValue = inputRef.current?.value;
     try {
       const content = textFieldValue as string;
@@ -162,7 +165,7 @@ const ChatInput = ({ chatId }: { chatId: string | string[] | undefined }) => {
           const chunkValue = decoder.decode(value);
           fullResponse += chunkValue;
           setResponse((prev) => prev + chunkValue);
-          console.log("Chunk Value", _response);
+          console.log("Response", fullResponse);
         }
 
         //send messageToredux and the _response to the backend for saving
@@ -174,6 +177,7 @@ const ChatInput = ({ chatId }: { chatId: string | string[] | undefined }) => {
         messageToRedux = response.data.lastMessage;
         dispatch(addMessage({ chatId, messageToRedux }));
         setResponse("");
+        setIsSending(false);
 
         // update the chat title if it hasn't been updated before
         if (!isTitleUpdated) {
@@ -202,6 +206,7 @@ const ChatInput = ({ chatId }: { chatId: string | string[] | undefined }) => {
       //   showSnackbar({ severity: "success", message: response.data.message })
       // );
     } catch (error: any) {
+      setIsSending(false);
       dispatch(showSnackbar({ severity: "error", message: error.message }));
     }
   };
@@ -225,14 +230,18 @@ const ChatInput = ({ chatId }: { chatId: string | string[] | undefined }) => {
           endAdornment: (
             <Stack sx={{ position: "relative" }}>
               <InputAdornment position="end">
-                <IconButton
-                  onClick={() => handleMessageSent({ chats, chatId })}
-                >
-                  <PaperPlaneTilt
-                    weight="fill"
-                    color={theme.palette.primary.main}
-                  />
-                </IconButton>
+                {isSending ? (
+                  <CircularProgress size={24} />
+                ) : (
+                  <IconButton
+                    onClick={() => handleMessageSent({ chats, chatId })}
+                  >
+                    <PaperPlaneTilt
+                      weight="fill"
+                      color={theme.palette.primary.main}
+                    />
+                  </IconButton>
+                )}
               </InputAdornment>
             </Stack>
           ),

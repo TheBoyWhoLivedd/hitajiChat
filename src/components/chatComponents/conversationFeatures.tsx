@@ -24,6 +24,10 @@ import { RootState } from "@/redux/rootReducer";
 import { ThunkDispatch } from "redux-thunk";
 import { AnyAction } from "redux";
 import { Message } from "../../../types";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { solarizedlight } from "react-syntax-highlighter/dist/cjs/styles/prism";
 
 const MessageOption = ({
   messageId,
@@ -162,8 +166,8 @@ const TextMsg = forwardRef<HTMLPreElement, { message: Message; menu: Boolean }>(
               ref={ref}
               style={{
                 margin: 0,
-                fontSize: "0.875rem",
-                fontFamily: "inherit",
+                // fontSize: "0.875rem",
+                // fontFamily: "inherit",
                 whiteSpace: "pre-wrap",
               }}
             >
@@ -174,7 +178,96 @@ const TextMsg = forwardRef<HTMLPreElement, { message: Message; menu: Boolean }>(
                     : "#fff"
                 }
               >
-                {message.content}
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    code({
+                      node,
+                      inline,
+                      className,
+                      children,
+                      style,
+                      ...props
+                    }) {
+                      const match = /language-(\w+)/.exec(className || "") || [
+                        "",
+                        "javascript",
+                      ];
+                      return !inline && match ? (
+                        <SyntaxHighlighter
+                          style={solarizedlight}
+                          language={match[1]}
+                          PreTag="div"
+                          {...props}
+                        >
+                          {String(children).replace(/\n$/, "")}
+                        </SyntaxHighlighter>
+                      ) : (
+                        <code className={className} style={style} {...props}>
+                          {children}
+                        </code>
+                      );
+                    },
+                    table({ node, ...props }) {
+                      return (
+                        <div style={{ overflowX: "auto" }}>
+                          <table
+                            style={{
+                              borderCollapse: "collapse",
+                              width: "100%",
+                            }}
+                            {...props}
+                          />
+                        </div>
+                      );
+                    },
+                    th({ node, ...props }) {
+                      return (
+                        <th
+                          style={{
+                            border: "1px solid black",
+                            padding: "6px 13px",
+                          }}
+                          {...props}
+                        />
+                      );
+                    },
+                    td({ node, ...props }) {
+                      return (
+                        <td
+                          style={{
+                            border: "1px solid black",
+                            padding: "6px 13px",
+                          }}
+                          {...props}
+                        />
+                      );
+                    },
+                    ol({ node, ...props }) {
+                      return <ol style={{ paddingLeft: "20px" }} {...props} />;
+                    },
+                    ul({ node, ...props }) {
+                      return <ol style={{ paddingLeft: "20px" }} {...props} />;
+                    },
+                    li({ node, ...props }) {
+                      return (
+                        <li {...props}>
+                          <div
+                            style={{
+                              display: "flex",
+                              flexDirection: "column",
+                              justifyContent: "center",
+                            }}
+                          >
+                            {props.children}
+                          </div>
+                        </li>
+                      );
+                    },
+                  }}
+                >
+                  {message.content}
+                </ReactMarkdown>
               </Typography>
             </pre>
             <Stack alignSelf={"flex-end"}>
@@ -189,6 +282,7 @@ const TextMsg = forwardRef<HTMLPreElement, { message: Message; menu: Boolean }>(
     );
   }
 );
+
 TextMsg.displayName = "TextMsg";
 
 const TypingTextMsg = forwardRef<
@@ -224,26 +318,96 @@ const TypingTextMsg = forwardRef<
             ref={ref}
             style={{
               margin: 0,
-              fontSize: "0.875rem",
-              fontFamily: "inherit",
-              // color: role === "assistant" ? theme.palette.text.primary : "#fff",
+              // fontSize: "0.875rem",
+              // fontFamily: "inherit",
               whiteSpace: "pre-wrap",
             }}
           >
-            <Typography
-              color={role === "assistant" ? theme.palette.text.primary : "#fff"}
-            >
-              {message}
+            <Typography color="#000">
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  code({ node, inline, className, children, style, ...props }) {
+                    const match = /language-(\w+)/.exec(className || "") || [
+                      "",
+                      "javascript",
+                    ];
+                    return !inline && match ? (
+                      <SyntaxHighlighter
+                        style={solarizedlight}
+                        language={match[1]}
+                        PreTag="div"
+                        {...props}
+                      >
+                        {String(children).replace(/\n$/, "")}
+                      </SyntaxHighlighter>
+                    ) : (
+                      <code className={className} style={style} {...props}>
+                        {children}
+                      </code>
+                    );
+                  },
+                  table({ node, ...props }) {
+                    return (
+                      <div style={{ overflowX: "auto" }}>
+                        <table
+                          style={{
+                            borderCollapse: "collapse",
+                            width: "100%",
+                          }}
+                          {...props}
+                        />
+                      </div>
+                    );
+                  },
+                  th({ node, ...props }) {
+                    return (
+                      <th
+                        style={{
+                          border: "1px solid black",
+                          padding: "6px 13px",
+                        }}
+                        {...props}
+                      />
+                    );
+                  },
+                  td({ node, ...props }) {
+                    return (
+                      <td
+                        style={{
+                          border: "1px solid black",
+                          padding: "6px 13px",
+                        }}
+                        {...props}
+                      />
+                    );
+                  },
+                  ol({ node, ...props }) {
+                    return <ol style={{ paddingLeft: "20px" }} {...props} />;
+                  },
+                  li({ node, ...props }) {
+                    return (
+                      <li {...props}>
+                        <div
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            justifyContent: "center",
+                          }}
+                        >
+                          {props.children}
+                        </div>
+                      </li>
+                    );
+                  },
+                }}
+              >
+                {message}
+              </ReactMarkdown>
             </Typography>
           </pre>
-          {/* <Stack alignSelf={"flex-end"}>
-            {message.starred && <Star weight="fill" color="grey" />}
-          </Stack> */}
         </Stack>
       </Box>
-      {/* {menu && (
-        <MessageOption messageId={message._id} starred={message.starred} />
-      )} */}
     </Stack>
   );
 });

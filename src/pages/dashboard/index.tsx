@@ -31,6 +31,19 @@ const GeneralApp = () => {
     useDispatch<ThunkDispatch<RootState, undefined, AnyAction>>();
   const { data: session } = useSession();
 
+  //kickstarting server hosted on shared hosting so uploading a document doesnt take time
+  async function startServer() {
+    let response = await axios.get(`https://www.upload.hitajitech.site`);
+    // console.log(response);
+  }
+  useEffect(() => {
+    startServer();
+    // Set an interval to call it every 5 minutes
+    const intervalId = setInterval(startServer, 5 * 60 * 1000);
+    // Clear the interval when the component unmounts
+    return () => clearInterval(intervalId);
+  }, []);
+
   const fetchUserDataAndChats = useCallback(async () => {
     try {
       let response = await axios.post("/api/user", {

@@ -71,24 +71,24 @@ const Conversation = forwardRef<
           "🚀 ~ file: Conversation.tsx:57 ~ handleSubmit ~ userName:",
           userName
         );
-        // setFileUploading(true);
+        setFileUploading(true);
         let res = await axios.post(`https://www.upload.hitajitech.site`, formData);
-        console.log(res);
+        // console.log(res);
         const content = {
           pdfContent: res.data.content,
           originalFileName: res.data.originalFileName,
         };
-        console.log(content);
+        // console.log(content);
         let response = await axios.post(
           `api/upload/${userId}/${chatId}/${userName}`,
           content
         );
         setFiles(null);
 
-        console.log(
-          "🚀 ~ file: Conversation.tsx:45 ~ handleSubmit ~ response:",
-          response
-        );
+        // console.log(
+        //   "🚀 ~ file: Conversation.tsx:45 ~ handleSubmit ~ response:",
+        //   response
+        // );
 
         const title = response.data.message;
         const data = {
@@ -97,7 +97,7 @@ const Conversation = forwardRef<
         const messageToRedux = response.data.content;
         dispatch(setIsTyping());
         dispatch(addMessage({ chatId, messageToRedux }));
-        // setFileUploading(false);
+        setFileUploading(false);
         response = await axios.patch(`/api/chats/${userId}/${chatId}`, data);
         dispatch(updateChatTitle({ chatId, title }));
         dispatch(
