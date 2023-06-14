@@ -17,7 +17,7 @@ const requestGPT3Turbo = async (messages: ChatCompletionRequestMessage[]) => {
   let counter = 0;
 
   const chatRequestOpts: CreateChatCompletionRequest = {
-    model: "gpt-3.5-turbo",
+    model: "gpt-3.5-turbo-16k",
     messages,
     temperature: 0.9,
     stream: true,
@@ -94,6 +94,8 @@ const requestGPT3Turbo = async (messages: ChatCompletionRequestMessage[]) => {
 export async function POST(req: Request): Promise<Response> {
   // console.log(req.json())
   const { gpt } = await req.json();
+  // console.log("GPT: ", gpt)
+  console.log("Reached Stream Route");
 
   try {
     const messageStream = await requestGPT3Turbo(gpt);

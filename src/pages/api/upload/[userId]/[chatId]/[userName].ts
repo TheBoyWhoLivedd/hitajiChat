@@ -71,7 +71,7 @@ export default async function handler(
         const { userId, chatId, userName } = req.query;
         // const originalFileName = req.file?.originalname;
         const docTitle = originalFileName?.slice(0, -4);
-        const content = `Hey ${userName}, I would be glad to answer any question about ${docTitle}, or if you would like me to give you a summary of what ${docTitle} is about, just click the Summarize button above`;
+        const content = `Hey ${userName}, I would be glad to answer any question about ${docTitle}, or if you would like me to give you a summary of what ${docTitle} is about, just click the Summarize button (S) above`;
         const defaultMessage = {
           role: "assistant",
           content: content,
@@ -96,7 +96,7 @@ export default async function handler(
         const myDocument =
           pdfContent && new Document({ pageContent: pdfContent });
         const textSplitter = new RecursiveCharacterTextSplitter({
-          chunkSize: 4000,
+          chunkSize: 8000,
           chunkOverlap: 200,
         });
         const docs =

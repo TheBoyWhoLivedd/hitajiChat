@@ -56,10 +56,11 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === "POST") {
       try {
         // console.log("🚀 ~ file: [chatId].ts:16 ~ req.body", req.body);
-        const { messageToRedux, fullResponse } = req.body;
+        const { messageToRedux, fullResponse, isSummary } = req.body;
         const { userId, chatId } = req.query;
+        const _id = `${userId}-${chatId}`;
         const chat = await fetchChatByChatId(chatId as string);
-        chat.messages.push(messageToRedux);
+        messageToRedux && chat.messages.push(messageToRedux);
         const lastMessage = {
           role: "assistant",
           content: fullResponse,
@@ -67,8 +68,11 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
           starred: false,
         };
         chat.messages.push(lastMessage);
+        if (isSummary && !chat.isSummarized) {
+          chat.isSummarized = true;
+        }
         await chat.save();
-
+        await Documents.findOneAndDelete({ _id: _id });
         res.status(200).send({ lastMessage });
         console.log(
           "🚀 SUCCESS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"

@@ -173,6 +173,7 @@ const ChatInput = ({ chatId }: { chatId: string | string[] | undefined }) => {
         const response = await axios.post(`/api/save/${userId}/${chatId}`, {
           messageToRedux,
           fullResponse,
+          isSummary: false,
         });
         messageToRedux = response.data.lastMessage;
         dispatch(addMessage({ chatId, messageToRedux }));

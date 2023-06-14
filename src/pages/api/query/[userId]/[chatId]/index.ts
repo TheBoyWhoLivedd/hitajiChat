@@ -81,7 +81,7 @@ const queryPinecone = async (
   const index = pinecone.Index(PINECONE_INDEX_NAME);
   const queryRequest = {
     vector: embedding,
-    topK: 2,
+    topK: 3,
     includeValues: true,
     includeMetadata: true,
     namespace: pineConeNameSpace,
@@ -104,7 +104,7 @@ const constructPrompt = (
   tokenCount += getTokens(prompt);
   console.log("Token Count", tokenCount);
 
-  while (tokenCount >= 4000 && reqMessages.length > 0) {
+  while (tokenCount >= 15500 && reqMessages.length > 0) {
     const firstMessage = reqMessages.shift();
     if (firstMessage) {
       tokenCount -= getTokens(firstMessage.content);
@@ -115,7 +115,7 @@ const constructPrompt = (
     // tokenCount -= getTokens(firstMessage.content);
   }
 
-  if (tokenCount >= 4000) {
+  if (tokenCount >= 15500) {
     throw new Error("Query too large");
   }
 

@@ -46,6 +46,8 @@ import { addChat } from "@/redux/slices/chats";
 import { RootState } from "@/redux/rootReducer";
 import { ThunkDispatch } from "redux-thunk";
 import { AnyAction } from "redux";
+import { useAtom } from "jotai";
+import { responseAtom } from "@/utils/store";
 
 const StyledBadge = styled(Badge)(({ theme }) => ({
   "& .MuiBadge-badge": {
@@ -87,6 +89,7 @@ const Conversation_Menu = [
 
 const ChatHeader = () => {
   const [openDelete, setOpenDelete] = useState(false);
+  const [_response, setResponse] = useAtom(responseAtom);
   const dispatch =
     useDispatch<ThunkDispatch<RootState, undefined, AnyAction>>();
   const userId = useSelector((state: RootState) => state.user.user?._id);
@@ -173,22 +176,57 @@ const ChatHeader = () => {
     chatId: string | string[] | undefined
   ) => {
     try {
-      // setSummarizing(true);
-      const response = await axios.post(
+      setSummarizing(true);
+      const queryResponse = await axios.post(
         `/api/summarize/${userId}/${chatId}`,
         {}
       );
-      // setSummarizing(false);
 
-      const messageToRedux = response.data.summary;
-      dispatch(setIsTyping());
+      const prompt = { gpt: queryResponse.data.gptMessages };
+      console.log("This is the Prompt", prompt);
+      const res = await fetch(`/api/chats/${userId}/${chatId}`, {
+        method: "POST",
+        body: JSON.stringify(prompt),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      if (!res.ok) throw new Error(res.statusText);
+      console.log(res.body);
+
+      const streamData = res.body;
+      if (!streamData) return;
+
+      const reader = streamData.getReader();
+      const decoder = new TextDecoder();
+      let done = false;
+      let fullResponse = "";
+
+      while (!done) {
+        const { value, done: doneReading } = await reader.read();
+        done = doneReading;
+        const chunkValue = decoder.decode(value);
+        fullResponse += chunkValue;
+        setResponse((prev) => prev + chunkValue);
+        console.log("Response", fullResponse);
+      }
+
+      const response = await axios.post(`/api/save/${userId}/${chatId}`, {
+        fullResponse,
+        isSummary: true,
+      });
+      const messageToRedux = response.data.lastMessage;
       dispatch(addMessage({ chatId, messageToRedux }));
+      setResponse("");
+      dispatch(setIsTyping());
       dispatch(updateIsSummarized({ chatId }));
-      dispatch(
-        showSnackbar({ severity: "success", message: response.data.message })
-      );
+      // dispatch(
+      //   showSnackbar({ severity: "success", message: response.data.message })
+      // );
+      setSummarizing(false);
     } catch (error: any) {
       dispatch(showSnackbar({ severity: "error", message: error.message }));
+      setSummarizing(false);
     }
   };
 
@@ -214,31 +252,6 @@ const ChatHeader = () => {
         sx={{ width: "100%", height: "100%" }}
         justifyContent="space-between"
       >
-        {/* <Stack
-          onClick={() => {
-            dispatch(ToggleSidebar());
-          }}
-          spacing={1}
-          direction="row"
-          alignItems={"center"}
-        >
-          <Box>
-            <StyledBadge
-              overlap="circular"
-              anchorOrigin={{
-                vertical: "bottom",
-                horizontal: "right",
-              }}
-              variant="dot"
-            >
-              <Avatar alt={faker.name.fullName()} src={faker.image.avatar()} />
-            </StyledBadge>
-          </Box>
-          <Stack alignSelf={"flex-end"}>
-            <Typography variant="caption">Online</Typography>
-          </Stack>
-        </Stack>         */}
-
         <Stack
           direction={"row"}
           alignItems="center"
@@ -246,12 +259,6 @@ const ChatHeader = () => {
           justifyContent="space-between"
           spacing={isMobile ? 1 : 3}
         >
-          {/* <IconButton>
-            <VideoCamera />
-          </IconButton>
-          <IconButton>
-            <Phone />
-          </IconButton> */}
           {isDesktop ? (
             <>
               <Button
@@ -273,23 +280,45 @@ const ChatHeader = () => {
               {summarizing && <CircularProgress />}
             </>
           ) : (
-            <Tooltip title="Create new chat">
-              <Button
-                variant="contained"
-                sx={{
-                  borderRadius: "50%",
-                  padding: "12px",
-                  minWidth: "auto",
-                  width: "30px",
-                  height: "30px",
-                }}
-                onClick={handleNewChatButtonClick}
-              >
-                <Typography variant="h5" component="span">
-                  +
-                </Typography>
-              </Button>
-            </Tooltip>
+            <>
+              <Tooltip title="Create new chat">
+                <Button
+                  variant="contained"
+                  sx={{
+                    borderRadius: "50%",
+                    padding: "12px",
+                    minWidth: "auto",
+                    width: "30px",
+                    height: "30px",
+                  }}
+                  onClick={handleNewChatButtonClick}
+                >
+                  <Typography variant="h5" component="span">
+                    +
+                  </Typography>
+                </Button>
+              </Tooltip>
+              {!isSummarized && !summarizing && (
+                <Tooltip title="Summarize chat">
+                  <Button
+                    variant="contained"
+                    sx={{
+                      borderRadius: "50%",
+                      padding: "12px",
+                      minWidth: "auto",
+                      width: "30px",
+                      height: "30px",
+                    }}
+                    onClick={() => handleSummarizeButtonClick(chatId)}
+                  >
+                    <Typography variant="h5" component="span">
+                      S
+                    </Typography>
+                  </Button>
+                </Tooltip>
+              )}
+              {summarizing && <CircularProgress />}
+            </>
           )}
           <Tooltip title="Pin chat">
             <IconButton onClick={handlePushPin}>
@@ -323,58 +352,6 @@ const ChatHeader = () => {
               <Info />
             </IconButton>
           </Tooltip>
-
-          {/* <Divider orientation="vertical" flexItem /> */}
-          {/* <IconButton
-            id="conversation-positioned-button"
-            aria-controls={
-              openConversationMenu ? "conversation-positioned-menu" : undefined
-            }
-            aria-haspopup="true"
-            aria-expanded={openConversationMenu ? "true" : undefined}
-            onClick={handleClickConversationMenu}
-          >
-            <CaretDown />
-          </IconButton>
-          <Menu
-            MenuListProps={{
-              "aria-labelledby": "fade-button",
-            }}
-            TransitionComponent={Fade}
-            id="conversation-positioned-menu"
-            aria-labelledby="conversation-positioned-button"
-            anchorEl={conversationMenuAnchorEl}
-            open={openConversationMenu}
-            onClose={handleCloseConversationMenu}
-            anchorOrigin={{
-              vertical: "bottom",
-              horizontal: "right",
-            }}
-            transformOrigin={{
-              vertical: "top",
-              horizontal: "right",
-            }}
-          >
-            <Box p={1}>
-              <Stack spacing={1}>
-                {Conversation_Menu.map((el) => (
-                  <MenuItem
-                    onClick={handleCloseConversationMenu}
-                    key={el.title}
-                  >
-                    <Stack
-                      sx={{ minWidth: 100 }}
-                      direction="row"
-                      alignItems={"center"}
-                      justifyContent="space-between"
-                    >
-                      <span>{el.title}</span>
-                    </Stack>{" "}
-                  </MenuItem>
-                ))}
-              </Stack>
-            </Box>
-          </Menu> */}
         </Stack>
       </Stack>
       {openDelete && (

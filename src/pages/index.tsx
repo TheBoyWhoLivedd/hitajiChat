@@ -60,6 +60,29 @@ export default function Component() {
                 Continue with Google
               </Typography>
             </Button>
+            {/* <Button
+              variant="outlined"
+              sx={{ p: 2, width: isMobile ? "100%" : "60%" }}
+              onClick={(e) => {
+                e.preventDefault();
+                signIn("apple", { callbackUrl: "/dashboard" });
+              }}
+            >
+              <Image
+                src="/apple.svg"
+                alt="apple logo"
+                width={20}
+                height={20}
+                style={{ marginRight: "1rem" }}
+              />
+              <Typography
+                variant="h6"
+                color={theme.palette.grey[700]}
+                sx={{ fontWeight: "500" }}
+              >
+                Continue with Apple ID
+              </Typography>
+            </Button> */}
           </Stack>
         </Stack>
       </Container>
