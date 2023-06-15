@@ -178,7 +178,7 @@ const ChatHeader = () => {
     try {
       setSummarizing(true);
       const queryResponse = await axios.post(
-        `/api/summarize/${userId}/${chatId}`,
+        `https://upload.hitajitech.site/summary/${userId}/${chatId}`,
         {}
       );
 

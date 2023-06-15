@@ -17,25 +17,22 @@ if (!process.env.PINECONE_ENVIRONMENT || !process.env.PINECONE_API_KEY) {
   throw new Error("Pinecone environment or api key vars missing");
 }
 
-// Global Pinecone instance
+// PineconeClient initialization
 let pinecone: PineconeClient;
 
-// Pinecone initialization
 async function initPinecone() {
   if (!pinecone) {
     try {
       pinecone = new PineconeClient();
-
       await pinecone.init({
-        environment: process.env.PINECONE_ENVIRONMENT ?? "", //this is in the dashboard
+        environment: process.env.PINECONE_ENVIRONMENT ?? "",
         apiKey: process.env.PINECONE_API_KEY ?? "",
       });
     } catch (error) {
-      console.log("error", error);
+      console.error("error", error);
       throw new Error("Failed to initialize Pinecone Client");
     }
   }
-
   return pinecone;
 }
 
@@ -54,22 +51,16 @@ export default async function handler(
   req: Request | NextApiRequestWithFile,
   res: NextApiResponse
 ) {
+  console.time("Embedding PDF Content");
   const session = await getServerSession(req, res, authOptions);
   if (session) {
     if (req.method === "POST") {
-      await mongooseConnect();
       try {
-        // Get the raw body of the request using getRawBody
+        await mongooseConnect();
         const rawBody = await getRawBody(req, { limit: "10mb" });
-
-        // Convert the rawBody into JSON
         const body = JSON.parse(rawBody.toString());
-
-        // Destructure pdfContent and originalFileName
         const { pdfContent, originalFileName } = body;
-        // const { pdfContent, originalFileName } = req.body;
         const { userId, chatId, userName } = req.query;
-        // const originalFileName = req.file?.originalname;
         const docTitle = originalFileName?.slice(0, -4);
         const content = `Hey ${userName}, I would be glad to answer any question about ${docTitle}, or if you would like me to give you a summary of what ${docTitle} is about, just click the Summarize button (S) above`;
         const defaultMessage = {
@@ -79,7 +70,6 @@ export default async function handler(
           starred: false,
         };
         const pineConeNameSpace = `${userId}-${chatId}`;
-        // Read the contents of the PDF file
         const newDocument = new Documents({
           _id: pineConeNameSpace,
           name: docTitle,
@@ -87,7 +77,6 @@ export default async function handler(
           userId: userId,
         });
 
-        // Save the new document to the database
         await newDocument.save();
         await Chat.findOneAndUpdate(
           { _id: chatId },
@@ -101,15 +90,8 @@ export default async function handler(
         });
         const docs =
           myDocument && (await textSplitter.splitDocuments([myDocument]));
-        res.status(200).json({
-          status: "success",
-          message: docTitle,
-          content: defaultMessage,
-        });
         const embeddings = new OpenAIEmbeddings();
-        const pinecone = await initPinecone();
-        const index = pinecone.Index(PINECONE_INDEX_NAME);
-        // console.log(index); //change to your own index name
+        const index = (await initPinecone()).Index(PINECONE_INDEX_NAME);
 
         //embed the PDF documents
         if (docs) {
@@ -120,11 +102,15 @@ export default async function handler(
           });
         }
 
-        // Add the new message to the messages array of the chat document
-
-        // Send a response with the PDF contents
+        res.status(200).json({
+          status: "success",
+          message: docTitle,
+          content: defaultMessage,
+        });
       } catch (error: any) {
         res.status(500).json({ error: error.message });
+      } finally {
+        console.timeEnd("Embedding PDF Content");
       }
     } else {
       res.status(405).json({ error: "Method not allowed" });
@@ -132,7 +118,6 @@ export default async function handler(
   } else {
     res.status(401).json({ success: false, message: "Please Login" });
   }
-  res.end();
 }
 
 // Disable Next.js body parser to allow multer to handle the file

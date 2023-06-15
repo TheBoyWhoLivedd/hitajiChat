@@ -72,8 +72,12 @@ const Conversation = forwardRef<
           userName
         );
         setFileUploading(true);
-        let res = await axios.post(`https://www.upload.hitajitech.site`, formData);
+        let res = await axios.post(
+          `https://www.upload.hitajitech.site`,
+          formData
+        );
         // console.log(res);
+        // http://localhost:3500
         const content = {
           pdfContent: res.data.content,
           originalFileName: res.data.originalFileName,
@@ -85,10 +89,10 @@ const Conversation = forwardRef<
         );
         setFiles(null);
 
-        // console.log(
-        //   "🚀 ~ file: Conversation.tsx:45 ~ handleSubmit ~ response:",
-        //   response
-        // );
+        console.log(
+          "🚀 ~ file: Conversation.tsx:45 ~ handleSubmit ~ response:",
+          response
+        );
 
         const title = response.data.message;
         const data = {
@@ -108,6 +112,7 @@ const Conversation = forwardRef<
         );
       } catch (error: any) {
         dispatch(showSnackbar({ severity: "error", message: error.message }));
+        setFileUploading(false);
       }
     } else {
       dispatch(

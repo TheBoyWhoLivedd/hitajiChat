@@ -1,8 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { v4 as uuidv4 } from "uuid";
-import { User } from "@/app/models/user";
 import { Documents } from "@/app/models/document";
-import { Chat } from "@/app/models/chat";
 import { mongooseConnect } from "@/utils/mongooseConnect";
 import { getTokens } from "@/utils/util";
 
@@ -34,6 +31,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ): Promise<void> {
+  console.time("Handler Execution Time");
   try {
     await mongooseConnect();
 
@@ -55,7 +53,7 @@ export default async function handler(
         partitionSize = Math.floor(partitionSize / 2);
         continue;
       }
-      // console.log(`TOKEN COUNT: ${tokenCount}`);
+
       partitions.push(part);
       i += partitionSize;
       partitionSize = 60000;
@@ -64,10 +62,13 @@ export default async function handler(
     const summaries = await Promise.all(partitions.map(fetchSummary));
     let allSummaries = summaries.join("\n\n");
 
-    // console.log(`TOKEN COUNT: ${getTokens(allSummaries)}`);
-
     while (getTokens(allSummaries) > 15000) {
-      allSummaries = await fetchSummary(allSummaries);
+      const mid = allSummaries.length / 2;
+      const part1 = allSummaries.substring(0, mid);
+      const part2 = allSummaries.substring(mid);
+      const summary1 = await fetchSummary(part1);
+      const summary2 = await fetchSummary(part2);
+      allSummaries = `${summary1}\n\n${summary2}`;
     }
 
     const prompt = `You are a text summarizer. Write a detailed summary of the following text, (text: ${allSummaries}). Begin Your Reply with "Here is the summary of the document"`;
@@ -78,5 +79,7 @@ export default async function handler(
   } catch (error: any) {
     console.error(error);
     res.status(500).send({ message: error.message });
+  } finally {
+    console.timeEnd("Handler Execution Time");
   }
 }
