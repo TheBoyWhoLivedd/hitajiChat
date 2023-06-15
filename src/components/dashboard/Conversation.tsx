@@ -30,6 +30,8 @@ import { ChangeEvent } from "react";
 import { FormEvent } from "react";
 import { responseAtom } from "@/utils/store";
 import { useAtom } from "jotai";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 
 const Conversation = forwardRef<
   HTMLPreElement,
@@ -47,6 +49,7 @@ const Conversation = forwardRef<
   const chatId = query.id;
   const userId = useSelector((state: RootState) => state.user.user?._id);
   const userName = useSelector((state: RootState) => state.user.user?.name);
+  const snackbar = useSelector((state: RootState) => state.app.snackbar);
   const dispatch =
     useDispatch<ThunkDispatch<RootState, undefined, AnyAction>>();
   const [files, setFiles] = useState<File | null>(null);
@@ -102,7 +105,7 @@ const Conversation = forwardRef<
         dispatch(setIsTyping());
         dispatch(addMessage({ chatId, messageToRedux }));
         setFileUploading(false);
-        response = await axios.patch(`/api/chats/${userId}/${chatId}`, data);
+        response = await axios.patch(`/api/save/${userId}/${chatId}`, data);
         dispatch(updateChatTitle({ chatId, title }));
         dispatch(
           showSnackbar({
@@ -124,6 +127,15 @@ const Conversation = forwardRef<
 
   return (
     <Box p={isMobile ? 1 : 3} height={"100%"}>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert severity={snackbar.severity} sx={{ width: "100%" }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
       {messages && messages?.length > 0 ? (
         <>
           <Stack spacing={3}>

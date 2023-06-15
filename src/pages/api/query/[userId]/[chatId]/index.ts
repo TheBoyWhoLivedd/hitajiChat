@@ -159,7 +159,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
           matchesText[match.id] = sanitizedText;
         }
 
-        console.log(matchesText);
+        // console.log(matchesText);
 
         const prompt = constructPrompt(
           combinedText,

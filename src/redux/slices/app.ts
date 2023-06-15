@@ -67,23 +67,6 @@ export const { changeDarkModeIcon, setChatsBar, setIsTyping } =
 
 // ----------------------------------------------------------------------
 
-// export const closeSnackBar = () => async (dispatch: any, getState: any) => {
-//   dispatch(appSlice.actions.closeSnackBar());
-// };
-
-// export function ToggleSidebar() {
-//   return (dispatch: any, getState: any) => {
-//     dispatch(appSlice.actions.toggleSideBar());
-//   };
-// }
-
-// export function UpdateSidebarType(type: AppState["sideBar"]["type"]) {
-//   return (dispatch: any, getState: any) => {
-//     dispatch(appSlice.actions.updateSideBarType({ type }));
-//   };
-
-// }
-
 //These dont need to be a thunk actions because they are only dispatching a single aciton with no delay or conditon
 
 export const closeSnackBar = () => appSlice.actions.closeSnackBar();
@@ -107,3 +90,20 @@ export const showSnackbar =
   };
 
 
+
+// export const closeSnackBar = () => async (dispatch: any, getState: any) => {
+//   dispatch(appSlice.actions.closeSnackBar());
+// };
+
+// export function ToggleSidebar() {
+//   return (dispatch: any, getState: any) => {
+//     dispatch(appSlice.actions.toggleSideBar());
+//   };
+// }
+
+// export function UpdateSidebarType(type: AppState["sideBar"]["type"]) {
+//   return (dispatch: any, getState: any) => {
+//     dispatch(appSlice.actions.updateSideBarType({ type }));
+//   };
+
+// }
