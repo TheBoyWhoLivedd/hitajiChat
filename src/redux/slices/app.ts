@@ -14,8 +14,8 @@ const initialState: AppState = {
   isTyping: false,
   isLastMessage: false,
   snackbar: {
-    open: null,
-    severity: null,
+    open: undefined,
+    severity: undefined,
     message: null,
   },
 };
@@ -46,7 +46,10 @@ const appSlice = createSlice({
 
     openSnackBar(
       state,
-      action: PayloadAction<{ severity: string; message: string }>
+      action: PayloadAction<{
+        severity: "error" | "success" | "info" | "warning";
+        message: string;
+      }>
     ) {
       state.snackbar.open = true;
       state.snackbar.severity = action.payload.severity;
@@ -71,12 +74,18 @@ export const { changeDarkModeIcon, setChatsBar, setIsTyping } =
 
 export const closeSnackBar = () => appSlice.actions.closeSnackBar();
 export const ToggleSidebar = () => appSlice.actions.toggleSideBar();
-export const UpdateSidebarType = (type: AppState["sideBar"]["type"]) => appSlice.actions.updateSideBarType({ type });
-
+export const UpdateSidebarType = (type: AppState["sideBar"]["type"]) =>
+  appSlice.actions.updateSideBarType({ type });
 
 export const showSnackbar =
-  ({ severity, message }: { severity: string; message: string }) =>
-   (dispatch: any, getState: any) => {
+  ({
+    severity,
+    message,
+  }: {
+    severity: "error" | "success" | "info" | "warning";
+    message: string;
+  }) =>
+  (dispatch: any, getState: any) => {
     dispatch(
       appSlice.actions.openSnackBar({
         message,
@@ -88,8 +97,6 @@ export const showSnackbar =
       dispatch(appSlice.actions.closeSnackBar());
     }, 4000);
   };
-
-
 
 // export const closeSnackBar = () => async (dispatch: any, getState: any) => {
 //   dispatch(appSlice.actions.closeSnackBar());

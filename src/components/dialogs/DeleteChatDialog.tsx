@@ -18,7 +18,6 @@ import { RootState } from "@/redux/rootReducer";
 import { ThunkDispatch } from "redux-thunk";
 import { AnyAction } from "redux";
 
-
 interface DeleteChatDialogProps {
   open: boolean;
   handleClose: () => void;
@@ -48,18 +47,20 @@ const DeleteChatDialog: React.FC<DeleteChatDialogProps> = ({
       // made it optimistic delete
       // setDeleting(true)
       handleClose();
-      router.push("/dashboard");
       dispatch(deleteChat({ chatId }));
+      router.push("/dashboard");
+      dispatch(
+        showSnackbar({
+          severity: "success",
+          message: "Chat Deleted Successfully",
+        })
+      );
       const response = await axios.delete(`/api/save/${userId}/${chatId}`);
 
       // setDeleting(false)
       console.log(
         "🚀 ~ file: DeleteChatDialog.tsx:29 ~ handleChatDelete ~ response:",
         response
-      );
-
-      dispatch(
-        showSnackbar({ severity: "success", message: response.data.message })
       );
     } catch (error: any) {
       dispatch(showSnackbar({ severity: "error", message: error.message }));

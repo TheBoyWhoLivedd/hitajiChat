@@ -201,7 +201,12 @@ const ChatHeader = () => {
       const decoder = new TextDecoder();
       let done = false;
       let fullResponse = "";
-
+      dispatch(
+        showSnackbar({
+          severity: "success",
+          message: "Summary Ready. Thanks for waiting",
+        })
+      );
       while (!done) {
         const { value, done: doneReading } = await reader.read();
         done = doneReading;
@@ -220,9 +225,7 @@ const ChatHeader = () => {
       setResponse("");
       dispatch(setIsTyping());
       dispatch(updateIsSummarized({ chatId }));
-      // dispatch(
-      //   showSnackbar({ severity: "success", message: response.data.message })
-      // );
+
       setSummarizing(false);
     } catch (error: any) {
       dispatch(showSnackbar({ severity: "error", message: error.message }));

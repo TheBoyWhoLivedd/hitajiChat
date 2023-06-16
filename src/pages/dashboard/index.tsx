@@ -22,6 +22,8 @@ import { updateStarredMessages } from "@/redux/slices/starredMessages";
 import { RootState } from "@/redux/rootReducer";
 import { ThunkDispatch } from "redux-thunk";
 import { AnyAction } from "redux";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 
 // import {  updateUserChats } from "../../redux/slices/auth";
 // import { setChatsBar, showSnackbar } from "../../redux/slices/app";
@@ -30,7 +32,7 @@ const GeneralApp = () => {
   const dispatch =
     useDispatch<ThunkDispatch<RootState, undefined, AnyAction>>();
   const { data: session } = useSession();
-
+  const snackbar = useSelector((state: RootState) => state.app.snackbar);
   //kickstarting server hosted on shared hosting so uploading a document doesnt take time
   async function startServer() {
     let response = await axios.get(`https://www.upload.hitajitech.site`);
@@ -116,6 +118,24 @@ const GeneralApp = () => {
   return (
     <DashboardLayout>
       <Stack direction="row" sx={{ width: "100%" }}>
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={3000}
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          style={{ top: "70px" }}
+        >
+          <Alert
+            severity={snackbar.severity}
+            sx={{
+              width: "100%",
+              backgroundColor: snackbar.severity === "error" ? "red" : "green",
+              color: snackbar.severity === "error" ? "black" : "white",
+            }}
+          >
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
+
         {isChatsBarOpen || (!isChatsBarOpen && !isMobile) ? (
           <ChatSection isMobile={isMobile} userId={user?._id} />
         ) : null}
