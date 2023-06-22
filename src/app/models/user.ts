@@ -13,7 +13,7 @@ const USerSchema = new Schema({
   emailVerified: { type: String },
   credits: {
     type: Number,
-    default: 1, // or set to initial credits value
+    default: 50, // or set to initial credits value
   },
 });
 
