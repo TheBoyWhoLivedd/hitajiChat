@@ -59,6 +59,8 @@ const ChatSection = ({
     (state: RootState) => state.buttons.starredClicked
   );
   const chats = useSelector((state: RootState) => state.chats.chats);
+  const user = useSelector((state: RootState) => state.user.user);
+  // console.log(user);
   const starredMessages = useSelector(
     (state: RootState) => state.starredMessages.starredMessages
   );
@@ -171,6 +173,11 @@ const ChatSection = ({
                 Chats
               </Typography>
             </Link>
+            <div>
+              <Typography variant="body1" sx={{ fontSize: "1rem  !important" }}>
+                Credits: {user?.credits}
+              </Typography>
+            </div>
 
             <Stack direction={"row"} alignItems="center" spacing={1}>
               {/* <IconButton

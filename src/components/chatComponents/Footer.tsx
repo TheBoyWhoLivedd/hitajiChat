@@ -27,6 +27,7 @@ import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { setIsTyping, showSnackbar } from "../../redux/slices/app";
 import { addMessage, updateChatTitle } from "../../redux/slices/chats";
+import { updateUserCredits } from "../../redux/slices/user";
 import UploadDocumentDialog from "../dialogs/UploadDocumentDialog";
 import { useRouter } from "next/router";
 import { RootState } from "@/redux/rootReducer";
@@ -36,43 +37,11 @@ import { ChatProps, Message } from "../../../types";
 import { responseAtom } from "@/utils/store";
 import { useAtom } from "jotai";
 import { CircularProgress } from "@mui/material";
+import { getTokens } from "@/utils/util";
 
 //the messages object from front end is different from the one on backend.
 //I need to define a separate type for the message object on front end but cant because i cant chat
 
-const Actions = [
-  {
-    color: "#4da5fe",
-    icon: <Image size={24} />,
-    y: 102,
-    title: "Photo/Video",
-  },
-  {
-    color: "#1b8cfe",
-    icon: <Sticker size={24} />,
-    y: 172,
-    title: "Stickers",
-  },
-  {
-    color: "#0172e4",
-    icon: <Camera size={24} />,
-    y: 242,
-    title: "Image",
-  },
-
-  {
-    color: "#0159b2",
-    icon: <File size={24} />,
-    y: 312,
-    title: "Document",
-  },
-  {
-    color: "#013f7f",
-    icon: <User size={24} />,
-    y: 382,
-    title: "Contact",
-  },
-];
 const StyledInput = styled(TextField)(({ theme }) => ({
   "& .MuiInputBase-input": {
     paddingTop: "12px !important",
@@ -83,6 +52,7 @@ const StyledInput = styled(TextField)(({ theme }) => ({
   },
 }));
 const ChatInput = ({ chatId }: { chatId: string | string[] | undefined }) => {
+  const router = useRouter();
   const [openActions, setOpenActions] = React.useState(false);
   const [isSending, setIsSending] = useState(false);
   const [_response, setResponse] = useAtom(responseAtom);
@@ -91,6 +61,7 @@ const ChatInput = ({ chatId }: { chatId: string | string[] | undefined }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const userId = useSelector((state: RootState) => state.user.user?._id);
+  const credits = useSelector((state: RootState) => state.user.user?.credits);
   const theme = useTheme();
 
   const chats = useSelector((state: RootState) => state.chats.chats);
@@ -140,6 +111,16 @@ const ChatInput = ({ chatId }: { chatId: string | string[] | undefined }) => {
           }
         );
         const prompt = { gpt: queryResponse.data.gptMessages };
+        // console.log(prompt.gpt[0].content);
+        const tokensUsed = getTokens(prompt.gpt[0].content);
+        // console.log("Tokens used", tokensUsed);
+        const creditsUsed = Math.ceil(tokensUsed / 1000);
+        // console.log("Credits used", creditsUsed);
+        if (credits && creditsUsed > credits) {
+          router.push("/billing");
+          return;
+        }
+
         console.log("This is the Prompt", prompt);
         const res = await fetch(`/api/chats/${userId}/${chatId}`, {
           method: "POST",
@@ -177,6 +158,7 @@ const ChatInput = ({ chatId }: { chatId: string | string[] | undefined }) => {
         });
         messageToRedux = response.data.lastMessage;
         dispatch(addMessage({ chatId, messageToRedux }));
+        dispatch(updateUserCredits(response.data.credits));
         setResponse("");
         setIsSending(false);
 
@@ -207,6 +189,7 @@ const ChatInput = ({ chatId }: { chatId: string | string[] | undefined }) => {
       //   showSnackbar({ severity: "success", message: response.data.message })
       // );
     } catch (error: any) {
+      console.log(error);
       setIsSending(false);
       dispatch(showSnackbar({ severity: "error", message: error.message }));
     }

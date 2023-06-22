@@ -40,13 +40,6 @@ if (!process.env.PINECONE_INDEX_NAME) {
   throw new Error("Missing Pinecone index name in .env file");
 }
 
-// const fetchChatByChatId = async (chatId: string) => {
-//   const chat = await Chat.findById(chatId);
-//   if (!chat) {
-//     throw new Error("Chat not found");
-//   }
-//   return chat;
-// };
 
 const processMessages = (messages: any[]): ChatCompletionRequestMessage[] => {
   return messages.map((message) => {
@@ -166,26 +159,6 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
           latestMessage,
           reqMessages
         );
-        // let tokenCount = 0;
-
-        // reqMessages.forEach((msg) => {
-        //   const tokens = getTokens(msg.content);
-        //   tokenCount += tokens;
-        // });
-        // tokenCount += getTokens(prompt);
-        // while (tokenCount >= 4000 && reqMessages.length > 0) {
-        //   const firstMessage = reqMessages.shift();
-        //   if (firstMessage) {
-        //     tokenCount -= getTokens(firstMessage.content);
-        //     console.log(
-        //       `Removed message with ${getTokens(firstMessage.content)} tokens`
-        //     );
-        //   }
-        // }
-
-        // if (tokenCount >= 4000) {
-        //   throw new Error("Query too large");
-        // }
 
         const gptMessages: ChatCompletionRequestMessage[] = [
           { role: "system", content: prompt },

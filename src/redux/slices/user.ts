@@ -1,17 +1,21 @@
-import { createSlice } from '@reduxjs/toolkit';
-import { UserState } from '../../../types';
+import { createSlice } from "@reduxjs/toolkit";
+import { UserState } from "../../../types";
 
-
-const initialState:UserState  = {
-  user:null
-}
+const initialState: UserState = {
+  user: null,
+};
 
 const userSlice = createSlice({
-  name: 'user',
+  name: "user",
   initialState,
   reducers: {
     updateUser(state, action) {
       state.user = action.payload;
+    },
+    updateUserCredits: (state, action) => {
+      if (state.user) {
+        state.user.credits = action.payload;
+      }
     },
     logoutUser(state) {
       state.user = null;
@@ -19,6 +23,6 @@ const userSlice = createSlice({
   },
 });
 
-export const { updateUser,logoutUser } = userSlice.actions;
+export const { updateUser, logoutUser, updateUserCredits } = userSlice.actions;
 
 export default userSlice.reducer;

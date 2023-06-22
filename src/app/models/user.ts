@@ -11,6 +11,10 @@ const USerSchema = new Schema({
     type: String,
   },
   emailVerified: { type: String },
+  credits: {
+    type: Number,
+    default: 1, // or set to initial credits value
+  },
 });
 
 export const User = models.User || model("User", USerSchema);

@@ -125,6 +125,7 @@ type UserObject = {
   name: string;
   email: string;
   image: string;
+  credits: number;
 };
 
 type UserState = {

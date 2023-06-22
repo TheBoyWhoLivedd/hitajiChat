@@ -15,6 +15,7 @@ import { mongooseConnect } from "@/utils/mongooseConnect";
 import { getServerSession } from "next-auth/next";
 import authOptions from "../../../auth/[...nextauth]";
 import { ChatProps, IUser } from "../../../../../../types.js";
+import { getTokens } from "@/utils/util";
 
 //Pinecone setup
 async function initPinecone() {
@@ -60,6 +61,27 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
         const { userId, chatId } = req.query;
         const _id = `${userId}-${chatId}`;
         const chat = await fetchChatByChatId(chatId as string);
+
+        // Fetch the user
+        const user = await User.findById(userId);
+        if (!user) {
+          throw new Error("User not found");
+        }
+
+        const promptTokens = getTokens(messageToRedux.content);
+        const responseTokens = getTokens(fullResponse);
+
+        const promptCredits = Math.ceil(promptTokens / 1000);
+        const responseCredits = Math.ceil(responseTokens / 1000);
+
+        if (user.credits < promptCredits + responseCredits) {
+          user.credits = 0;
+        } else {
+          user.credits -= promptCredits + responseCredits;
+        }
+
+        await user.save();
+
         messageToRedux && chat.messages.push(messageToRedux);
         const lastMessage = {
           role: "assistant",
@@ -73,7 +95,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
         }
         await chat.save();
         await Documents.findOneAndDelete({ _id: _id });
-        res.status(200).send({ lastMessage });
+        res.status(200).send({ lastMessage, credits: user.credits });
         console.log(
           "🚀 SUCCESS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
         );
