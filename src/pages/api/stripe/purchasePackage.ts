@@ -54,17 +54,17 @@ export default async function handler(
       await CreditPackage.create([
         {
           packageName: "Silver",
-          price: "price_1NLMtRDhEN95Y6l92uWKXlUb", // Price in dollars or your currency
+          price: process.env.SILVER,
           numOfCredits: 1000,
         },
         {
           packageName: "Gold",
-          price: "price_1NLjkyDhEN95Y6l99J3ObyeR",
+          price: process.env.GOLD,
           numOfCredits: 10500,
         },
         {
           packageName: "Platinum",
-          price: "price_1NLMuoDhEN95Y6l93vygi9aY",
+          price: process.env.PLATINUM,
           numOfCredits: 22000,
         },
       ]);
