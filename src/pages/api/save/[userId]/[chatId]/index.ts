@@ -68,18 +68,23 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
           throw new Error("User not found");
         }
 
-        const promptTokens = getTokens(messageToRedux.content);
+        const promptTokens =
+          messageToRedux && getTokens(messageToRedux.content);
         const responseTokens = getTokens(fullResponse);
 
-        const promptCredits = Math.ceil(promptTokens / 1000);
+        const promptCredits = promptTokens && Math.ceil(promptTokens / 1000);
         const responseCredits = Math.ceil(responseTokens / 1000);
 
-        if (user.credits < promptCredits + responseCredits) {
-          user.credits = 0;
-        } else {
-          user.credits -= promptCredits + responseCredits;
+        let totalCredits = responseCredits;
+        if (!isSummary) {
+          totalCredits += promptCredits;
         }
 
+        if (user.credits < totalCredits) {
+          user.credits = 0;
+        } else {
+          user.credits -= totalCredits;
+        }
         await user.save();
 
         messageToRedux && chat.messages.push(messageToRedux);
